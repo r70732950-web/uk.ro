@@ -3,33 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دەرهێنەری لینکی Maten TV</title>
+    <title>Maten TV - Auto Player</title>
     <style>
-        body { font-family: Tahoma, sans-serif; background: #111; color: white; text-align: center; padding: 50px; }
-        input { padding: 10px; font-size: 16px; width: 60%; max-width: 400px; text-align: left; direction: ltr; }
-        button { padding: 10px 20px; font-size: 16px; background: #0084ff; color: white; border: none; cursor: pointer; margin-top: 10px; }
-        #result { margin-top: 30px; padding: 20px; background: #222; border-radius: 5px; word-wrap: break-word; color: #0f0; direction: ltr; text-align: left; }
+        body { 
+            background-color: #000; 
+            color: #fff; 
+            font-family: Tahoma, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        #status { font-size: 18px; }
     </style>
 </head>
 <body>
-    <h2>دەرهێنەری لینکی m3u8 - OK.RU</h2>
-    <p>ئایدی ڤیدیۆکە بنووسە (نموونە: 15635834281716)</p>
-    
-    <input type="text" id="videoId" placeholder="ئایدی ڤیدیۆکە لێرە بنووسە..." />
-    <br>
-    <button onclick="getLink()">لینکەکە دەربهێنە</button>
 
-    <div id="result">لینکەکە لێرە دەردەکەوێت...</div>
+    <div id="status">خەریکی ئامادەکردنی ڤیدیۆکەیە، تکایە چاوەڕێ بکە...</div>
 
     <script>
-        async function getLink() {
-            const vid = document.getElementById('videoId').value.trim();
-            if(!vid) return alert("تکایە ئایدی ڤیدیۆ بنووسە");
-            
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerText = "چاوەڕێ بکە، خەریکی شکاندنی کۆدەکەیە...";
+        async function startAutoPlay() {
+            // وەرگرتنی ئایدی لە لینکەکەوە
+            const urlParams = new URLSearchParams(window.location.search);
+            const vid = urlParams.get('id');
+            const statusText = document.getElementById('status');
 
-            // بەکارهێنانی پڕۆکسییەکی کاتی تەنها بۆ تێپەڕاندنی سکیوێرتی کرۆم (CORS) تا بتوانین تێکستەکە بخوێنینەوە
+            if(!vid) {
+                statusText.innerText = "تکایە ئایدی ڤیدیۆکە لە لینکەکەدا دابنێ (نموونە: ?id=15635834281716)";
+                return;
+            }
+
             const targetUrl = encodeURIComponent(`https://ok.ru/videoembed/${vid}`);
             const proxyUrl = `https://api.allorigins.win/get?url=${targetUrl}`;
 
@@ -38,7 +42,7 @@
                 const data = await response.json();
                 const html = data.contents;
 
-                // گەڕان بەدوای لینکی m3u8 لەناو فایلەکانی ok.ru
+                // شکاندنی کۆدەکە و دۆزینەوەی m3u8
                 const match = html.match(/data-options=(?:'|")([^'"]+)(?:'|")/i);
                 if(match && match[1]) {
                     let decoded = decodeURIComponent(match[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&'));
@@ -46,17 +50,24 @@
                     
                     if(m3u8Match && m3u8Match[1]) {
                         let cleanLink = m3u8Match[1].replace(/\\u0026/g, '&');
-                        resultDiv.innerHTML = `<p style="color:white; text-align:right;">ئەمەش لینکە خاوێنەکەی m3u8:</p><br><a href="${cleanLink}" style="color:#0f0;" target="_blank">${cleanLink}</a>`;
+                        statusText.innerText = "ڤیدیۆکە دۆزرایەوە! خەریکە پەخش دەبێت...";
+                        
+                        // ئەم دێڕە بە ئۆتۆماتیکی وێبسایتەکە ئاڕاستەی لینکی ڤیدیۆکە دەکات
+                        window.location.href = cleanLink;
                     } else {
-                        resultDiv.innerText = "لینکەکە نەدۆزرایەوە!";
+                        statusText.innerText = "کێشە هەیە: لینکی ڤیدیۆکە نەدۆزرایەوە!";
                     }
                 } else {
-                    resultDiv.innerText = "کۆدی ڤیدیۆکە نەدۆزرایەوە!";
+                    statusText.innerText = "کێشە هەیە: کۆدی ڤیدیۆکە نەدۆزرایەوە!";
                 }
             } catch(e) {
-                resultDiv.innerText = "هەڵەیەک ڕوویدا لە کاتی پەیوەندیکردن: " + e.message;
+                statusText.innerText = "هەڵەیەک ڕوویدا لە کاتی پەیوەندیکردندا.";
             }
         }
+
+        // هەر کە لاپەڕەکە کرایەوە، ڕاستەوخۆ دەست بە گەڕان دەکات
+        window.onload = startAutoPlay;
     </script>
+
 </body>
 </html>
