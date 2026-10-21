@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maten TV - Player</title>
+    <style>
+        /* باکگراوندی ڕەش و پڕکردنەوەی تەواوی شاشەکە بە ڤیدیۆکە */
+        body { margin: 0; padding: 0; background-color: #000; overflow: hidden; }
+        iframe { width: 100vw; height: 100vh; border: none; }
+    </style>
+</head>
+<body>
+
+    <!-- پلەیەرەکە کە بەتاڵە تاوەکو لینکەکەی پێ دەدەین -->
+    <iframe id="videoPlayer" allow="autoplay; fullscreen" allowfullscreen></iframe>
+
+    <script>
+        // وەرگرتنی ئایدی ڤیدیۆکە لەناو لینکەکەی سەرەوە
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoId = urlParams.get('id');
+
+        // ئەگەر ئایدی هەبوو، بیخەرە ناو پلەیەرەکەی ok.ru و پەخشی بکە
+        if (videoId) {
+            document.getElementById('videoPlayer').src = "https://ok.ru/videoembed/" + videoId + "?autoplay=1";
+        } else {
+            // ئەگەر ئایدی نەبوو، ئەم نامەیە پیشان بدە
+            document.body.innerHTML = "<h2 style='color:white; text-align:center; font-family:sans-serif; margin-top:20%;'>تکایە ئایدی ڤیدیۆکە لە لینکەکەدا دابنێ</h2>";
+        }
+    </script>
+
+</body>
+</html>
